@@ -1,0 +1,294 @@
+STATIC ROUTING 3 ROUTER 3 SWITCH
+
+Router-Left (192.168.50.0 LAN)
+..............................
+
+enable
+configure terminal
+
+interface Gig0/0
+ ip address 192.168.50.1 255.255.255.224
+ no shutdown
+exit
+
+interface Se0/0/0
+ ip address 192.168.40.1 255.255.255.252
+clock rate 64000
+ no shutdown
+exit
+
+! Static Routes
+ip route 192.168.30.0 255.255.255.224 192.168.40.2
+ip route 192.168.10.0 255.255.255.224 192.168.40.2
+exit
+
+
+
+Router-Middle (192.168.30.0 LAN)
+................................
+
+enable
+configure terminal
+
+interface Gig0/0
+ ip address 192.168.30.1 255.255.255.224
+ no shutdown
+exit
+
+interface Se0/0/0
+ ip address 192.168.40.2 255.255.255.252
+ no shutdown
+exit
+
+interface Se0/0/1
+ ip address 192.168.20.1 255.255.255.252
+clock rate 64000
+ no shutdown
+exit
+
+! Static Routes
+ip route 192.168.50.0 255.255.255.224 192.168.40.1
+ip route 192.168.10.0 255.255.255.224 192.168.20.2
+exit
+
+
+Router-Right (192.168.10.0 LAN)
+............................
+
+enable
+configure terminal
+
+interface Gig0/0
+ ip address 192.168.10.1 255.255.255.224
+ no shutdown
+exit
+
+interface Se0/0/0
+ ip address 192.168.20.2 255.255.255.252
+ no shutdown
+exit
+
+! Static Routes
+ip route 192.168.30.0 255.255.255.224 192.168.20.1
+ip route 192.168.50.0 255.255.255.224 192.168.20.1
+exit
+
+
+
+////////////////////////////////////////////////////
+
+
+RIP V---1
+
+Router-Left (LAN: 192.168.50.0/27)
+...........................
+
+enable
+configure terminal
+
+interface Gig0/0
+ ip address 192.168.50.1 255.255.255.224
+ no shutdown
+exit
+
+interface Se0/0/0
+ ip address 192.168.40.1 255.255.255.252
+ clock rate 64000
+ no shutdown
+exit
+
+router rip
+ version 1
+ network 192.168.50.0
+ network 192.168.40.0
+exit
+
+
+Router-Middle (LAN: 192.168.30.0/27)
+.........................
+
+enable
+configure terminal
+
+
+interface Gig0/0
+ ip address 192.168.30.1 255.255.255.224
+ no shutdown
+exit
+
+interface Se0/0/0
+ ip address 192.168.40.2 255.255.255.252
+ no shutdown
+exit
+
+interface Se0/0/1
+ ip address 192.168.20.1 255.255.255.252
+ clock rate 64000
+ no shutdown
+exit
+
+router rip
+ version 1
+ network 192.168.30.0
+ network 192.168.40.0
+ network 192.168.20.0
+exit
+
+Router-Right (LAN: 192.168.10.0/27)
+.............................
+
+enable
+configure terminal
+
+interface Gig0/0
+ ip address 192.168.10.1 255.255.255.224
+ no shutdown
+exit
+
+interface Se0/0/0
+ ip address 192.168.20.2 255.255.255.252
+ no shutdown
+exit
+
+router rip
+ version 1
+ network 192.168.10.0
+ network 192.168.20.0
+exit
+
+/////////////////////////////
+
+JUST FOR RIP V--2 CHANGES
+-----------------------------
+router rip
+ version 2
+ network 192.168.10.0
+ network 192.168.20.0
+no auto summary
+exit
+
+
+/////////////////////////////////
+
+OSPF CUNNECTION
+-------------------
+
+Router-Left (LAN: 192.168.50.0/27)
+..................................
+
+enable
+configure terminal
+
+
+interface Gig0/0
+ ip address 192.168.50.1 255.255.255.224
+ no shutdown
+exit
+
+interface Se0/0/0
+ ip address 192.168.40.1 255.255.255.252
+ clock rate 64000
+ no shutdown
+exit
+
+interface Se0/0/1
+ ip address 192.168.60.1 255.255.255.252
+ clock rate 64000
+ no shutdown
+exit
+
+router ospf 1
+ network 192.168.50.0 0.0.0.31 area 0
+ network 192.168.40.0 0.0.0.3 area 0
+ network 192.168.60.0 0.0.0.3 area 0
+exit
+
+
+Router-Top / Middle (LAN: 192.168.30.0/27)
+..........................................
+
+enable
+configure terminal
+
+interface Gig0/0
+ ip address 192.168.30.1 255.255.255.224
+ no shutdown
+exit
+
+interface Se0/0/0
+ ip address 192.168.40.2 255.255.255.252
+ no shutdown
+exit
+
+interface Se0/0/1
+ ip address 192.168.20.1 255.255.255.252
+ clock rate 64000
+ no shutdown
+exit
+
+router ospf 1
+ network 192.168.30.0 0.0.0.31 area 0
+ network 192.168.40.0 0.0.0.3 area 0
+ network 192.168.20.0 0.0.0.3 area 0
+exit
+
+Router-Right (LAN: 192.168.10.0/27)
+...................................
+
+
+enable
+configure terminal
+
+interface Gig0/0
+ ip address 192.168.10.1 255.255.255.224
+ no shutdown
+exit
+
+interface Se0/0/0
+ ip address 192.168.20.2 255.255.255.252
+ no shutdown
+exit
+
+interface Se0/0/1
+ ip address 192.168.60.2 255.255.255.252
+ no shutdown
+exit
+
+router ospf 1
+ network 192.168.10.0 0.0.0.31 area 0
+ network 192.168.20.0 0.0.0.3 area 0
+ network 192.168.60.0 0.0.0.3 area 0
+exit
+
+//////////////////////////////
+
+VLAN CONFIG 
+
+STEP-1: VLAN Create (Switch)
+..............................
+
+enable
+configure terminal
+
+vlan 2
+ name OFFICE
+exit
+
+vlan 3
+ name HOME
+exit
+
+STEP-2: PC Port গুলো VLAN-এ Assign করা (Access Mode)
+...................................................
+
+
+interface range fa0/19 , fa0/21
+ switchport mode access
+ switchport access vlan 3
+exit
+
+interface range fa0/18 , fa0/20
+ switchport mode access
+ switchport access vlan 2
+exit
+
